@@ -1,3 +1,5 @@
 from django.contrib import admin
+from .models import EmergencyHotline, PublicAnnouncement
 
-# Register your models here.
+admin.site.register(EmergencyHotline)
+admin.site.register(PublicAnnouncement)
