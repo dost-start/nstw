@@ -111,5 +111,5 @@ class LGUProfile(models.Model):
     )
     # Add other LGU specific fields if necessary
 
-    def __str__(self: str) -> str:
+    def __str__(self):
         return f"LGU: {self.department_name} ({self.user_profile.user.username})"

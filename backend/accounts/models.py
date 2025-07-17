@@ -48,13 +48,11 @@ class UserProfile(models.Model):
     contact_number = models.CharField(
         max_length=15,
         blank=True,
-        null=True,
         help_text="Contact number for the user (optional)."
     )
     name_for_report = models.CharField(
         max_length=100,
         blank=True,
-        null=True,
         help_text="Name provided by guest for emergency reports."
     )
 
@@ -62,7 +60,7 @@ class UserProfile(models.Model):
         return f"{self.user.username} - {self.authority_level}"
 
 class AdminProfile(models.Model):
-    user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='admin_profiles')
+    user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='admin_profile')
 
     def __str__(self):
         return f"Admin: {self.user_profile.user.username}"

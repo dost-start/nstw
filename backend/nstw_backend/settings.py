@@ -25,11 +25,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    raise RuntimeError("DJANGO_SECRET_KEY environment variable is not set. Please set it in your .env file or environment.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
+if not ALLOWED_HOSTS:
+    raise RuntimeError("ALLOWED_HOSTS environment variable is not set. Please set it in your .env file or environment.")
 
 
 # Application definition
