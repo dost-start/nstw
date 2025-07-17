@@ -6,4 +6,5 @@
 3. 'venv\Scripts\activate' to enter the virtual environment
 4. 'cd backend' to select backend folder
 5. 'pip install -r requirements.txt' to install dependencies
+6. 'python manage.py makemigrations' and then 'python manage.py migrate' to initialize database migrations
 6. 'python manage.py runserver' to run the backend server locally
