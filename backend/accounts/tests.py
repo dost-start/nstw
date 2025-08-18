@@ -60,3 +60,34 @@ class AccountsAPITest(TestCase):
 			responses.append(resp)
 		# Expect at least one 429 due to token_refresh rate of 10/min
 		self.assertTrue(any(r.status_code == status.HTTP_429_TOO_MANY_REQUESTS for r in responses))
+
+	def test_login_session_and_me(self):
+		# Register
+		self.client.post(reverse('api_register'), {'email': 'd@example.com', 'password': 'pass1234'}, format='json')
+		# Login via session-based login endpoint
+		login_url = reverse('api_login')
+		resp = self.client.post(login_url, {'email': 'd@example.com', 'password': 'pass1234'}, format='json')
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+		# Me endpoint should return authenticated user using session cookie
+		me_url = reverse('api_me')
+		resp = self.client.get(me_url)
+		self.assertEqual(resp.status_code, status.HTTP_200_OK)
+		self.assertEqual(resp.data.get('email'), 'd@example.com')
+
+	def test_logout_blacklists_refresh(self):
+		# Register and obtain refresh token
+		self.client.post(reverse('api_register'), {'email': 'e@example.com', 'password': 'pass1234'}, format='json')
+		obtain = self.client.post(reverse('token_obtain_pair'), {'email': 'e@example.com', 'password': 'pass1234'}, format='json')
+		self.assertEqual(obtain.status_code, status.HTTP_200_OK)
+		refresh = obtain.data.get('refresh')
+		access = obtain.data.get('access')
+		# Authenticate the request (logout now requires authentication)
+		self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
+		# Logout by sending refresh token in body (current implementation supports this)
+		logout_resp = self.client.post(reverse('api_logout'), {'refresh': refresh}, format='json')
+		self.assertEqual(logout_resp.status_code, status.HTTP_200_OK)
+		# Attempt to refresh using same token should now fail (blacklisted)
+		refresh_resp = self.client.post(reverse('token_refresh'), {'refresh': refresh}, format='json')
+		self.assertNotEqual(refresh_resp.status_code, status.HTTP_200_OK)
+
+

@@ -43,19 +43,19 @@ class LoginAPIView(APIView):
 
 
 class LogoutAPIView(APIView):
-	permission_classes = [permissions.AllowAny]
+	# Require authenticated user for logout
+	permission_classes = [IsAuthenticated]
 	throttle_scope = 'login'
 
 	def post(self, request):
-		# If client provides a refresh token, blacklist it so it cannot be reused.
+		# Expect refresh token in request body
 		refresh_token = request.data.get('refresh')
 		if refresh_token:
 			try:
 				RefreshToken(refresh_token).blacklist()
 			except Exception:
-				# Ignore errors here; token may be invalid or already blacklisted
 				pass
-		# Also clear the session if present
+		# Clear server-side session
 		logout(request)
 		return Response({'ok': True})
 

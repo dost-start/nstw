@@ -148,6 +148,8 @@ AUTH_USER_MODEL = 'accounts.User'
 # DRF minimal config (browsable API for quick testing)
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        # Allow session auth for browser-based/login tests and JWT for API clients
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
