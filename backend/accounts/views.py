@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 
 from .models import User, UserProfile
@@ -27,6 +28,7 @@ class RegisterAPIView(APIView):
 
 class LoginAPIView(APIView):
 	permission_classes = [permissions.AllowAny]
+	throttle_scope = 'login'
 
 	def post(self, request):
 		email = request.data.get('email')
@@ -42,8 +44,18 @@ class LoginAPIView(APIView):
 
 class LogoutAPIView(APIView):
 	permission_classes = [permissions.AllowAny]
+	throttle_scope = 'login'
 
 	def post(self, request):
+		# If client provides a refresh token, blacklist it so it cannot be reused.
+		refresh_token = request.data.get('refresh')
+		if refresh_token:
+			try:
+				RefreshToken(refresh_token).blacklist()
+			except Exception:
+				# Ignore errors here; token may be invalid or already blacklisted
+				pass
+		# Also clear the session if present
 		logout(request)
 		return Response({'ok': True})
 
