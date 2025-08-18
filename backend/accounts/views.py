@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
+from rest_framework.permissions import IsAuthenticated
 
 from .models import User, UserProfile
 from .serializers import RegisterSerializer, UserSerializer
@@ -48,9 +49,7 @@ class LogoutAPIView(APIView):
 
 
 class MeAPIView(APIView):
-	permission_classes = [permissions.AllowAny]
+	permission_classes = [IsAuthenticated]
 
 	def get(self, request):
-		if not request.user.is_authenticated:
-			return Response({'authenticated': False}, status=status.HTTP_401_UNAUTHORIZED)
 		return Response(UserSerializer(request.user).data)
