@@ -1,12 +1,15 @@
 from django.test import TestCase
 from django.urls import reverse
 from rest_framework.test import APIClient
+from django.core.cache import cache
 from rest_framework import status
 
 
 class AccountsAPITest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
+		# Clear cache so throttling state does not leak between tests
+		cache.clear()
 
 	def test_register_and_jwt_and_me(self):
 		# Register
@@ -27,3 +30,33 @@ class AccountsAPITest(TestCase):
 		resp = self.client.get(me_url)
 		self.assertEqual(resp.status_code, status.HTTP_200_OK)
 		self.assertEqual(resp.data.get('email'), 'a@example.com')
+
+	def test_token_obtain_throttling(self):
+		# Register a user first
+		self.client.post(reverse('api_register'), {'email': 'b@example.com', 'password': 'pass1234'}, format='json')
+		token_url = reverse('token_obtain_pair')
+		# send more requests than the throttle allows (login scope = 5/min)
+		responses = []
+		for i in range(7):
+			resp = self.client.post(token_url, {'email': 'b@example.com', 'password': 'pass1234'}, format='json')
+			responses.append(resp)
+		# The configured throttle for token_obtain is 10/min -> send 12 requests to exceed it
+		for i in range(7, 12):
+			resp = self.client.post(token_url, {'email': 'b@example.com', 'password': 'pass1234'}, format='json')
+			responses.append(resp)
+		# At least one response should be 429 Too Many Requests
+		self.assertTrue(any(r.status_code == status.HTTP_429_TOO_MANY_REQUESTS for r in responses))
+
+	def test_token_refresh_throttling(self):
+		# Register and obtain refresh token
+		self.client.post(reverse('api_register'), {'email': 'c@example.com', 'password': 'pass1234'}, format='json')
+		obtain = self.client.post(reverse('token_obtain_pair'), {'email': 'c@example.com', 'password': 'pass1234'}, format='json')
+		self.assertEqual(obtain.status_code, status.HTTP_200_OK)
+		refresh = obtain.data.get('refresh')
+		refresh_url = reverse('token_refresh')
+		responses = []
+		for i in range(12):
+			resp = self.client.post(refresh_url, {'refresh': refresh}, format='json')
+			responses.append(resp)
+		# Expect at least one 429 due to token_refresh rate of 10/min
+		self.assertTrue(any(r.status_code == status.HTTP_429_TOO_MANY_REQUESTS for r in responses))
