@@ -2,7 +2,6 @@ from django.contrib.auth import authenticate, login, logout
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import IsAuthenticated
 
 from .models import User, UserProfile
@@ -18,11 +17,29 @@ class RegisterAPIView(APIView):
 		data = serializer.validated_data
 		email = data['email']
 		password = data['password']
-		authority = data.get('authority_level', 'Guest')
+		full_name = data.get('full_name')
+		authority = data.get('authority_level')
+		contact_number = data.get('contact_number')
+		date_of_birth = data.get('date_of_birth')
+		address = data.get('address')
+		emergency_contact_name = data.get('emergency_contact_name')
+		emergency_contact_number = data.get('emergency_contact_number')
 		if User.objects.filter(email=email).exists():
 			return Response({'error': 'email already registered'}, status=status.HTTP_400_BAD_REQUEST)
-		user = User.objects.create_user(email=email, password=password)
-		UserProfile.objects.create(user=user, authority_level=authority)
+		user = User.objects.create_user(
+			email=email, 
+			password=password
+		)
+		UserProfile.objects.create(
+			user=user,
+			full_name=full_name,
+			authority_level=authority,
+			contact_number=contact_number,
+			date_of_birth=date_of_birth,
+			address=address,
+			emergency_contact_name=emergency_contact_name,
+			emergency_contact_number=emergency_contact_number,
+		)
 		return Response({'ok': True, 'email': user.email}, status=status.HTTP_201_CREATED)
 
 
@@ -48,13 +65,6 @@ class LogoutAPIView(APIView):
 	throttle_scope = 'login'
 
 	def post(self, request):
-		# Expect refresh token in request body
-		refresh_token = request.data.get('refresh')
-		if refresh_token:
-			try:
-				RefreshToken(refresh_token).blacklist()
-			except Exception:
-				pass
 		# Clear server-side session
 		logout(request)
 		return Response({'ok': True})

@@ -33,35 +33,20 @@ class User(AbstractUser):
         return self.email
 
 class UserProfile(models.Model):
+
     AUTHORITY_LEVEL_CHOICES = [
-        ('Admin', 'Admin'),
         ('Responder', 'Responder'),
-        ('LGU', 'Local Government Unit'),
-        ('Guest', 'Guest'),
+        ('User', 'User'),
     ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    authority_level = models.CharField(
-        max_length=20,
-        choices=AUTHORITY_LEVEL_CHOICES,
-        default='Guest',
-        help_text="Defines the user's role in the system."
-    )
-    contact_number = models.CharField(
-        max_length=15,
-        blank=True,
-        help_text="Contact number for the user (optional)."
-    )
-    name_for_report = models.CharField(
-        max_length=100,
-        blank=True,
-        help_text="Name provided by guest for emergency reports."
-    )
+    full_name = models.CharField(max_length=100)
+    authority_level = models.CharField(max_length=20, choices=AUTHORITY_LEVEL_CHOICES,)
+    contact_number = models.CharField(max_length=15)
+    date_of_birth = models.DateField()
+    address = models.TextField(max_length=100)
+    emergency_contact_name = models.CharField(max_length=100, blank=True, null=True)
+    emergency_contact_number = models.CharField(max_length=15, blank=True, null=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.authority_level}"
-
-class AdminProfile(models.Model):
-    user_profile = models.OneToOneField(UserProfile, on_delete=models.CASCADE, related_name='admin_profile')
-
-    def __str__(self):
-        return f"Admin: {self.user_profile.user.username}"
+        return f"{self.full_name} - {self.authority_level}"

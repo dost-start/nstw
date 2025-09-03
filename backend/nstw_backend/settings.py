@@ -55,10 +55,6 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',
 ]
-# Enable Simple JWT token blacklist app so refresh tokens can be revoked
-INSTALLED_APPS += [
-    'rest_framework_simplejwt.token_blacklist',
-]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -144,41 +140,3 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'
-
-# DRF minimal config (browsable API for quick testing)
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        # Allow session auth for browser-based/login tests and JWT for API clients
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    # Use scoped throttling so we can apply per-endpoint limits for auth endpoints
-    'DEFAULT_THROTTLE_CLASSES': (
-        'rest_framework.throttling.ScopedRateThrottle',
-        'rest_framework.throttling.AnonRateThrottle',
-    ),
-    'DEFAULT_THROTTLE_RATES': {
-        # login endpoint: strict to stop credential stuffing
-        'login': '5/min',
-        # token endpoints: allow a few per minute
-        'token_obtain': '10/min',
-        'token_refresh': '10/min',
-        # anonymous clients overall
-        'anon': '20/min',
-    },
-}
-
-from datetime import timedelta
-
-SIMPLE_JWT = {
-    # Shorten access token lifetime to reduce window if an access token is leaked.
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-    # Rotate refresh tokens on use and blacklist the previous token so stolen
-    # refresh tokens cannot be reused after rotation.
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-}
