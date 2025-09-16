@@ -1,0 +1,252 @@
+Product Description: Alisto – LGU-Based Disaster Response Application
+1. Introduction
+Alisto is a mobile disaster response application designed for implementation at the Local Government Unit (LGU) level in the Philippines. The platform provides a streamlined, community-centered system for disaster reporting, verification, and response coordination. By leveraging the resources of LGUs—such as police, fire departments, and water rescue services—Alisto enables faster, more reliable, and more transparent disaster management.
+The application serves as a bridge between citizens and responders, ensuring that emergency information is quickly reported, verified, and acted upon. With built-in geotagging, crowdsourcing verification, and responder dashboards, Alisto aims to strengthen local disaster preparedness and improve emergency response efficiency.
+
+2. Key Stakeholders
+Citizens (General Users)
+
+
+Residents within an LGU’s jurisdiction who may report incidents or respond to verification requests.
+
+
+Serve as the first line of communication during emergencies.
+
+
+Responders (LGU-affiliated Services)
+
+
+Includes police, fire departments, medical teams, and specialized units such as water rescue.
+
+
+Responsible for validating, prioritizing, and responding to reported incidents.
+
+
+Have access to dedicated administrative dashboards for monitoring and analytics.
+
+
+Local Government Units (LGUs)
+
+
+Oversee the system, manage user authentication, and allocate resources for disaster response.
+
+
+Use the platform for decision-making and long-term disaster resilience planning.
+
+
+
+3. Core Features
+3.1 Citizen Features
+Disaster Reporting
+ Citizens can submit incident reports directly through the mobile app. Each report includes:
+
+
+Event type (fire, flood, medical emergency, crime, etc.)
+
+
+Geotagged location data
+
+
+Optional text, images, or voice recordings
+
+
+Crowdsourcing Verification
+ When an incident is reported, nearby users may receive a verification request.
+
+
+Prompt: “Do you observe this event near your location?”
+
+
+Responses: Yes (confirming), No (denying), or No Response
+
+
+Verification results contribute to the incident’s credibility rating.
+
+
+Notifications
+ Citizens receive updates if:
+
+
+Their report has been verified or flagged as unverified.
+
+
+Responders have acknowledged and are en route to the incident.
+
+
+
+3.2 Responder Features
+Incident Management
+
+
+Responders receive reports in real time, classified by verification status (verified, unverified, or under review).
+
+
+Option to mark reports as accepted, in-progress, or resolved.
+
+
+Crowdsourcing Control
+
+
+Responders can initiate verification requests to citizens in the vicinity of a report.
+
+
+Crowdsourced data assists responders in prioritizing and validating events.
+
+
+Response Actions
+
+
+Responders can press a dedicated Respond button that triggers a notification to the reporter and relevant citizens, indicating that help is on the way.
+
+
+Allows LGU agencies to coordinate response units more effectively.
+
+
+Analytics Dashboard
+
+
+Web-based interface for responders and LGU administrators.
+
+
+Provides real-time and historical data such as:
+
+
+Number of incidents by type and location
+
+
+Response times
+
+
+Verification rates
+
+
+Resource allocation trends
+
+
+Supports evidence-based planning and continuous improvement of disaster strategies.
+
+
+
+3.3 Authentication and Security
+LGU-Managed Authentication
+
+
+Citizen and responder accounts are verified and managed by their respective LGUs.
+
+
+Ensures only legitimate users can report incidents, verify reports, or access sensitive response data.
+
+
+Reduces risk of fraudulent or malicious use.
+
+
+Data Privacy and Security
+
+
+Reports and geolocation data are encrypted in transit and at rest.
+
+
+Access to analytics dashboards is restricted to authenticated LGU personnel.
+
+
+
+4. System Workflow
+Citizen Report Submission
+
+
+A citizen submits a geotagged report of a disaster event.
+
+
+Verification Request
+
+
+Responders may send verification prompts to nearby users.
+
+
+Citizens respond with “Yes” or “No,” building a collective verification score.
+
+
+Responder Review
+
+
+Responders assess the report based on verification results and available data.
+
+
+They may choose to respond immediately, request further verification, or deprioritize the report.
+
+
+Response Deployment
+
+
+Responders press the Respond button, which updates the reporter and affected citizens.
+
+
+LGU resources (police, fire, rescue units) are dispatched as required.
+
+
+Post-Event Analytics
+
+
+Incident details and response metrics are stored in the LGU dashboard.
+
+
+Data informs policy-making and preparedness initiatives.
+
+
+
+5. Value Proposition
+For Citizens:
+
+
+Quick and reliable way to request help during disasters.
+
+
+Increases trust by providing transparency about verification and response actions.
+
+
+Empowers communities to participate in disaster resilience.
+
+
+For Responders and LGUs:
+
+
+Streamlines the validation and prioritization of incidents.
+
+
+Provides actionable analytics for disaster management.
+
+
+Enhances coordination among multiple LGU services.
+
+
+For Communities:
+
+
+Reduces false alarms and fraudulent reports through verification.
+
+
+Improves efficiency and timeliness of disaster response.
+
+
+Strengthens the bond between LGUs and citizens in crisis situations.
+
+
+
+6. Implementation Considerations
+Mobile Platform: Android and iOS support, designed for accessibility in low-connectivity areas.
+
+
+Offline Functionality: Reports can be stored locally and sent when a network becomes available.
+
+
+SMS Integration (Future Development): Allows geotagged reports to be transmitted even without internet, leveraging SMS gateways.
+
+
+Scalability: Designed to be deployed per LGU, sca
+
+
+
+7. Conclusion
+Alisto represents a modern, LGU-centered approach to disaster response in the Philippines. By integrating citizen reporting, crowdsourced verification, real-time responder coordination, and administrative analytics, the platform addresses the critical gaps in local disaster preparedness and emergency response.
+Through community participation and LGU oversight, Alisto seeks to create safer, more resilient communities capable of responding quickly and effectively to disasters.
+
