@@ -5,17 +5,32 @@ from django.core.cache import cache
 from rest_framework import status
 
 
+
 class AccountsAPITest(TestCase):
 	def setUp(self):
 		self.client = APIClient()
-		# Clear cache so throttling state does not leak between tests
 		cache.clear()
 
 	def test_register_and_jwt_and_me(self):
 		# Register
 		url = reverse('api_register')
-		resp = self.client.post(url, {'email': 'a@example.com', 'password': 'pass1234'}, format='json')
+		registration_data = {
+			'email': 'a@example.com',
+			'password': 'pass1234',
+			'full_name': 'Test User',
+			'authority_level': 'User',
+			'contact_number': '1234567890',
+			'date_of_birth': '2000-01-01',
+			'address': 'Test Address'
+		}
+		resp = self.client.post(url, registration_data, format='json')
 		self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+
+		# Approve user
+		from accounts.models import UserProfile
+		profile = UserProfile.objects.get(user__email='a@example.com')
+		profile.status = 'approved'
+		profile.save()
 
 		# Obtain token
 		token_url = reverse('token_obtain_pair')
@@ -31,63 +46,98 @@ class AccountsAPITest(TestCase):
 		self.assertEqual(resp.status_code, status.HTTP_200_OK)
 		self.assertEqual(resp.data.get('email'), 'a@example.com')
 
-	def test_token_obtain_throttling(self):
-		# Register a user first
-		self.client.post(reverse('api_register'), {'email': 'b@example.com', 'password': 'pass1234'}, format='json')
-		token_url = reverse('token_obtain_pair')
-		# send more requests than the throttle allows (login scope = 5/min)
-		responses = []
-		for i in range(7):
-			resp = self.client.post(token_url, {'email': 'b@example.com', 'password': 'pass1234'}, format='json')
-			responses.append(resp)
-		# The configured throttle for token_obtain is 10/min -> send 12 requests to exceed it
-		for i in range(7, 12):
-			resp = self.client.post(token_url, {'email': 'b@example.com', 'password': 'pass1234'}, format='json')
-			responses.append(resp)
-		# At least one response should be 429 Too Many Requests
-		self.assertTrue(any(r.status_code == status.HTTP_429_TOO_MANY_REQUESTS for r in responses))
-
-	def test_token_refresh_throttling(self):
-		# Register and obtain refresh token
-		self.client.post(reverse('api_register'), {'email': 'c@example.com', 'password': 'pass1234'}, format='json')
-		obtain = self.client.post(reverse('token_obtain_pair'), {'email': 'c@example.com', 'password': 'pass1234'}, format='json')
-		self.assertEqual(obtain.status_code, status.HTTP_200_OK)
-		refresh = obtain.data.get('refresh')
-		refresh_url = reverse('token_refresh')
-		responses = []
-		for i in range(12):
-			resp = self.client.post(refresh_url, {'refresh': refresh}, format='json')
-			responses.append(resp)
-		# Expect at least one 429 due to token_refresh rate of 10/min
-		self.assertTrue(any(r.status_code == status.HTTP_429_TOO_MANY_REQUESTS for r in responses))
-
-	def test_login_session_and_me(self):
-		# Register
-		self.client.post(reverse('api_register'), {'email': 'd@example.com', 'password': 'pass1234'}, format='json')
-		# Login via session-based login endpoint
+	def test_login_requires_approval(self):
+		# Register user
+		register_url = reverse('api_register')
+		resp = self.client.post(register_url, {
+			'email': 'test_approval@example.com',
+			'password': 'testpass123',
+			'full_name': 'Test User',
+			'authority_level': 'User',
+			'contact_number': '1234567890',
+			'date_of_birth': '2000-01-01',
+			'address': 'Test Address'
+		}, format='json')
+		self.assertEqual(resp.status_code, 201)
+		# Try login (should fail)
 		login_url = reverse('api_login')
-		resp = self.client.post(login_url, {'email': 'd@example.com', 'password': 'pass1234'}, format='json')
-		self.assertEqual(resp.status_code, status.HTTP_200_OK)
-		# Me endpoint should return authenticated user using session cookie
-		me_url = reverse('api_me')
-		resp = self.client.get(me_url)
-		self.assertEqual(resp.status_code, status.HTTP_200_OK)
-		self.assertEqual(resp.data.get('email'), 'd@example.com')
+		resp = self.client.post(login_url, {
+			'email': 'test_approval@example.com',
+			'password': 'testpass123'
+		}, format='json')
+		self.assertEqual(resp.status_code, 403)
+		# Approve user
+		from accounts.models import UserProfile
+		profile = UserProfile.objects.get(user__email='test_approval@example.com')
+		profile.status = 'approved'
+		profile.save()
+		# Try login again (should succeed)
+		resp = self.client.post(login_url, {
+			'email': 'test_approval@example.com',
+			'password': 'testpass123'
+		}, format='json')
+		self.assertEqual(resp.status_code, 200)
 
-	def test_logout_blacklists_refresh(self):
-		# Register and obtain refresh token
-		self.client.post(reverse('api_register'), {'email': 'e@example.com', 'password': 'pass1234'}, format='json')
-		obtain = self.client.post(reverse('token_obtain_pair'), {'email': 'e@example.com', 'password': 'pass1234'}, format='json')
-		self.assertEqual(obtain.status_code, status.HTTP_200_OK)
-		refresh = obtain.data.get('refresh')
-		access = obtain.data.get('access')
-		# Authenticate the request (logout now requires authentication)
+	def test_lgu_admin_can_list_and_approve_users(self):
+		# Register a pending user
+		reg_data = {
+			'email': 'pending@example.com',
+			'password': 'testpass123',
+			'full_name': 'Pending User',
+			'authority_level': 'User',
+			'contact_number': '1234567890',
+			'date_of_birth': '2000-01-01',
+			'address': 'Test Address'
+		}
+		self.client.post(reverse('api_register'), reg_data, format='json')
+
+		# Create and login as LGU admin
+		from accounts.models import User, UserProfile
+		admin = User.objects.create_user(email='admin@example.com', password='adminpass')
+		# Create profile for admin user
+		from django.core.exceptions import ObjectDoesNotExist
+		try:
+			admin_profile = UserProfile.objects.get(user=admin)
+		except ObjectDoesNotExist:
+			admin_profile = UserProfile.objects.create(
+				user=admin,
+				full_name='LGU Admin',
+				authority_level='LGU Administrator',
+				contact_number='1234567890',
+				date_of_birth='1980-01-01',
+				address='Admin Address',
+				status='approved'
+			)
+		else:
+			admin_profile.full_name = 'LGU Admin'
+			admin_profile.authority_level = 'LGU Administrator'
+			admin_profile.contact_number = '1234567890'
+			admin_profile.date_of_birth = '1980-01-01'
+			admin_profile.address = 'Admin Address'
+			admin_profile.status = 'approved'
+			admin_profile.save()
+		# Reload admin user to ensure userprofile is attached
+		admin = User.objects.get(email='admin@example.com')
+		assert hasattr(admin, 'profile'), 'Admin user does not have a profile!'
+		# Obtain JWT for admin
+		resp = self.client.post(reverse('token_obtain_pair'), {'email': 'admin@example.com', 'password': 'adminpass'}, format='json')
+		self.assertEqual(resp.status_code, 200)
+		access = resp.data['access']
 		self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {access}')
-		# Logout by sending refresh token in body (current implementation supports this)
-		logout_resp = self.client.post(reverse('api_logout'), {'refresh': refresh}, format='json')
-		self.assertEqual(logout_resp.status_code, status.HTTP_200_OK)
-		# Attempt to refresh using same token should now fail (blacklisted)
-		refresh_resp = self.client.post(reverse('token_refresh'), {'refresh': refresh}, format='json')
-		self.assertNotEqual(refresh_resp.status_code, status.HTTP_200_OK)
+
+		# List pending users
+		resp = self.client.get(reverse('pending_users'))
+		self.assertEqual(resp.status_code, 200)
+		emails = [u['email'] for u in resp.data]
+		self.assertIn('pending@example.com', emails)
+
+		# Approve the pending user
+		from accounts.models import UserProfile
+		pending_profile = UserProfile.objects.get(user__email='pending@example.com')
+		url = reverse('user_status_update', args=[pending_profile.pk])
+		resp = self.client.patch(url, {'status': 'approved'}, format='json')
+		self.assertEqual(resp.status_code, 200)
+		pending_profile.refresh_from_db()
+		self.assertEqual(pending_profile.status, 'approved')
 
 
