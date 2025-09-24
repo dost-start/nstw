@@ -1,11 +1,41 @@
-from django.contrib.auth import authenticate, login, logout
+
+# --- Imports ---
+from rest_framework import generics, serializers, status, permissions
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status, permissions
-from rest_framework.permissions import IsAuthenticated
-
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.generics import UpdateAPIView
+from django.contrib.auth import authenticate, login, logout
 from .models import User, UserProfile
 from .serializers import RegisterSerializer, UserSerializer
+from .permissions import IsLGUAdministrator
+
+# --- LGU Admin: List all pending users ---
+class PendingUsersListAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated, IsLGUAdministrator]
+    serializer_class = UserSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(profile__status='pending')
+
+# --- LGU Admin: Approve or reject a user ---
+class UserStatusUpdateSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=[('approved', 'approved'), ('rejected', 'rejected')])
+
+class UserStatusUpdateAPIView(UpdateAPIView):
+    permission_classes = [IsAuthenticated, IsLGUAdministrator]
+    serializer_class = UserStatusUpdateSerializer
+    queryset = UserProfile.objects.all()
+    lookup_field = 'pk'
+
+    def update(self, request, *args, **kwargs):
+        profile = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        profile.status = serializer.validated_data['status']
+        profile.save()
+        return Response({'ok': True, 'user': profile.user.email, 'status': profile.status})
 
 
 class RegisterAPIView(APIView):
@@ -39,8 +69,16 @@ class RegisterAPIView(APIView):
 			address=address,
 			emergency_contact_name=emergency_contact_name,
 			emergency_contact_number=emergency_contact_number,
+			status='pending',
 		)
-		return Response({'ok': True, 'email': user.email}, status=status.HTTP_201_CREATED)
+		# Generate JWT token for the new user
+		refresh = RefreshToken.for_user(user)
+		return Response({
+			'ok': True,
+			'email': user.email,
+			'refresh': str(refresh),
+			'access': str(refresh.access_token),
+		}, status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):
@@ -55,6 +93,12 @@ class LoginAPIView(APIView):
 		user = authenticate(request, username=email, password=password)
 		if user is None:
 			return Response({'error': 'invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+		# Check if user is approved
+		try:
+			if user.profile.status != 'approved':
+				return Response({'error': 'Account not approved. Please wait for LGU verification.'}, status=status.HTTP_403_FORBIDDEN)
+		except Exception:
+			return Response({'error': 'User profile not found.'}, status=status.HTTP_400_BAD_REQUEST)
 		login(request, user)
 		return Response(UserSerializer(user).data)
 

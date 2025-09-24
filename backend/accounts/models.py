@@ -37,6 +37,7 @@ class UserProfile(models.Model):
     AUTHORITY_LEVEL_CHOICES = [
         ('Responder', 'Responder'),
         ('User', 'User'),
+        ('LGU Administrator', 'LGU Administrator'),
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
@@ -47,6 +48,14 @@ class UserProfile(models.Model):
     address = models.TextField(max_length=100)
     emergency_contact_name = models.CharField(max_length=100, blank=True, null=True)
     emergency_contact_number = models.CharField(max_length=15, blank=True, null=True)
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+    ]
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
 
     def __str__(self):
         return f"{self.full_name} - {self.authority_level}"
+
+
