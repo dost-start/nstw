@@ -7,6 +7,99 @@ from rest_framework import status
 
 
 class AccountsAPITest(TestCase):
+	def test_password_reset_flow(self):
+		# Register and approve user
+		reg_url = reverse('api_register')
+		email = 'reset@example.com'
+		self.client.post(reg_url, {
+			'email': email,
+			'password': 'resetpass123',
+			'full_name': 'Reset User',
+			'authority_level': 'User',
+			'contact_number': '1234567890',
+			'date_of_birth': '2000-01-01',
+			'address': 'Test Address'
+		}, format='json')
+		from accounts.models import User, UserProfile
+		profile = UserProfile.objects.get(user__email=email)
+		profile.status = 'approved'
+		profile.save()
+		user = User.objects.get(email=email)
+		# Request password reset
+		reset_req_url = reverse('password_reset_request')
+		resp = self.client.post(reset_req_url, {'email': email}, format='json')
+		self.assertEqual(resp.status_code, 200)
+		# Simulate getting token and uid
+		from django.contrib.auth.tokens import default_token_generator
+		from django.utils.http import urlsafe_base64_encode
+		from django.utils.encoding import force_bytes
+		token = default_token_generator.make_token(user)
+		uid = urlsafe_base64_encode(force_bytes(user.pk))
+		# Confirm password reset
+		reset_confirm_url = reverse('password_reset_confirm')
+		resp = self.client.post(reset_confirm_url, {'uid': uid, 'token': token, 'password': 'newpass123'}, format='json')
+		self.assertEqual(resp.status_code, 200)
+		# Login with new password
+		login_url = reverse('api_login')
+		resp = self.client.post(login_url, {'email': email, 'password': 'newpass123'}, format='json')
+		self.assertEqual(resp.status_code, 200)
+
+	def test_email_verification_flow(self):
+		# Register and approve user
+		reg_url = reverse('api_register')
+		email = 'verify@example.com'
+		self.client.post(reg_url, {
+			'email': email,
+			'password': 'verifypass123',
+			'full_name': 'Verify User',
+			'authority_level': 'User',
+			'contact_number': '1234567890',
+			'date_of_birth': '2000-01-01',
+			'address': 'Test Address'
+		}, format='json')
+		from accounts.models import User, UserProfile
+		profile = UserProfile.objects.get(user__email=email)
+		profile.status = 'approved'
+		profile.save()
+		user = User.objects.get(email=email)
+		# Request email verification
+		verify_req_url = reverse('email_verification_request')
+		resp = self.client.post(verify_req_url, {'email': email}, format='json')
+		self.assertEqual(resp.status_code, 200)
+		# Simulate getting token and uid
+		from django.contrib.auth.tokens import default_token_generator
+		from django.utils.http import urlsafe_base64_encode
+		from django.utils.encoding import force_bytes
+		token = default_token_generator.make_token(user)
+		uid = urlsafe_base64_encode(force_bytes(user.pk))
+		# Confirm email verification
+		verify_confirm_url = reverse('email_verification_confirm')
+		resp = self.client.post(verify_confirm_url, {'uid': uid, 'token': token}, format='json')
+		self.assertEqual(resp.status_code, 200)
+		# Check profile is marked as verified
+		profile.refresh_from_db()
+		self.assertTrue(profile.email_verified)
+
+	def test_rate_limiting_on_register_and_login(self):
+		reg_url = reverse('api_register')
+		for i in range(4):
+			resp = self.client.post(reg_url, {
+				'email': f'ratelimit{i}@example.com',
+				'password': 'pass1234',
+				'full_name': 'Rate Limit',
+				'authority_level': 'User',
+				'contact_number': '1234567890',
+				'date_of_birth': '2000-01-01',
+				'address': 'Test Address'
+			}, format='json')
+		# 4th request should be throttled (limit is 3/min)
+		self.assertEqual(resp.status_code, 429)
+		# Test login rate limit
+		login_url = reverse('api_login')
+		for i in range(6):
+			resp = self.client.post(login_url, {'email': 'notfound@example.com', 'password': 'badpass'}, format='json')
+		# 6th request should be throttled (limit is 5/min)
+		self.assertEqual(resp.status_code, 429)
 	def setUp(self):
 		self.client = APIClient()
 		cache.clear()
