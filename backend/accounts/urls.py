@@ -19,4 +19,12 @@ urlpatterns = [
     # LGU admin endpoints
     path('pending-users/', views.PendingUsersListAPIView.as_view(), name='pending_users'),
     path('user-status/<int:pk>/', views.UserStatusUpdateAPIView.as_view(), name='user_status_update'),
+
+    # Password reset endpoints
+    path('password-reset/request/', views.PasswordResetRequestAPIView.as_view(), name='password_reset_request'),
+    path('password-reset/confirm/', views.PasswordResetConfirmAPIView.as_view(), name='password_reset_confirm'),
+
+    # Email verification endpoints
+    path('email-verification/request/', views.EmailVerificationRequestAPIView.as_view(), name='email_verification_request'),
+    path('email-verification/confirm/', views.EmailVerificationConfirmAPIView.as_view(), name='email_verification_confirm'),
 ]

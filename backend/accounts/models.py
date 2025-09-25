@@ -32,8 +32,8 @@ class User(AbstractUser):
     def __str__(self):
         return self.email
 
-class UserProfile(models.Model):
 
+class UserProfile(models.Model):
     AUTHORITY_LEVEL_CHOICES = [
         ('Responder', 'Responder'),
         ('User', 'User'),
@@ -54,6 +54,7 @@ class UserProfile(models.Model):
         ('rejected', 'Rejected'),
     ]
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
+    email_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.full_name} - {self.authority_level}"

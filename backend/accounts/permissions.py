@@ -10,5 +10,4 @@ class IsResponder(BasePermission):
 
 class IsLGUAdministrator(BasePermission):
     def has_permission(self, request, view):
-        if hasattr(request.user, 'profile'):
         return hasattr(request.user, 'profile') and request.user.profile.authority_level == 'LGU Administrator'

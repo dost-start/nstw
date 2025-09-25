@@ -1,3 +1,7 @@
+import os
+# For password reset and email verification links
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@example.com')
 """
 Django settings for nstw_backend project.
 
@@ -65,6 +69,20 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '20/minute',
+        'user': '100/minute',
+        'login': '5/minute',
+        'register': '3/minute',
+        'password_reset_request': '3/minute',
+        'password_reset_confirm': '3/minute',
+        'email_verification_request': '3/minute',
+        'email_verification_confirm': '3/minute',
+    },
 }
 
 from datetime import timedelta
