@@ -35,7 +35,6 @@ export default function FireStationSelectScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
       <View style={styles.headerRow}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Image
@@ -46,13 +45,11 @@ export default function FireStationSelectScreen() {
         <Text style={styles.headerText}>Choose Fire Station</Text>
       </View>
 
-      {/* Fire Station List */}
       <FlatList
         data={stations}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <TouchableOpacity style={styles.card}>
-            {/* Left: Icon */}
             <View style={styles.iconWrapper}>
               <Image
                 source={require('../assets/firetruckicon.png')}
@@ -60,13 +57,11 @@ export default function FireStationSelectScreen() {
               />
             </View>
 
-            {/* Middle: Details */}
             <View style={styles.detailsWrapper}>
               <Text style={styles.stationName}>{item.name}</Text>
               <Text style={styles.stationContact}>Contact {item.contact}</Text>
             </View>
 
-            {/* Right: Distance */}
             <View style={styles.distanceWrapper}>
               <Text style={styles.distanceLabel}>Distance</Text>
               <View style={styles.distancePill}>

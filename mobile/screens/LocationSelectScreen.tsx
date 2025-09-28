@@ -51,7 +51,6 @@ export default function LocationSelectScreen() {
         <Text style={styles.headerText}>Choose your location in Marikina</Text>
       </View>
 
-      {/* Search Bar */}
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => setShowList(true)}

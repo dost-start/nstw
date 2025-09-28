@@ -8,18 +8,26 @@ type Props = {
 export default function BottomNav({ onNavigate }: Props) {
   return (
     <View style={styles.bottomNav}>
-      <TouchableOpacity style={styles.bottomButton} onPress={() => onNavigate?.('Home')}>
+      <TouchableOpacity
+        style={styles.bottomButton}
+        onPress={() => onNavigate?.('UserHome')}
+      >
         <Image source={require('../assets/homeicon.png')} style={styles.icon} />
         <Text style={styles.bottomText}>Home</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.bottomButton} onPress={() => onNavigate?.('Hotlines')}>
+
+      <TouchableOpacity
+        style={styles.bottomButton}
+        onPress={() => onNavigate?.('Hotlines')}
+      >
         <Image source={require('../assets/hotlinesicon.png')} style={styles.icon} />
         <Text style={styles.bottomText}>Hotlines</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.bottomButton} onPress={() => onNavigate?.('Profile')}>
+
+      <View style={styles.bottomButton}>
         <Image source={require('../assets/profileicon.png')} style={styles.icon} />
-        <Text style={styles.bottomText}>Profile</Text>
-      </TouchableOpacity>
+        <Text style={styles.bottomText}>Emergency Info</Text>
+      </View>
     </View>
   );
 }
@@ -30,11 +38,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderTopWidth: 1,
     borderColor: '#ccc',
-    justifyContent: 'space-around',
-    alignItems: 'center',
     backgroundColor: '#f2f2f2',
   },
   bottomButton: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   icon: {

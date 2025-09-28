@@ -4,6 +4,7 @@ import TopNavWithBack from '../components/TopNavWithBack';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import WaveBackground from '../components/WaveBackground';
 
 type EmergencyOptionsNav = StackNavigationProp<RootStackParamList, 'EmergencyOptions'>;
 
@@ -20,30 +21,37 @@ export default function EmergencyOptionsScreen() {
 
   return (
     <View style={styles.container}>
-      <TopNavWithBack/>
+      <WaveBackground />
 
-      <View style={styles.middle}>
-        <Text style={styles.title}>What is your Emergency?</Text>
+      <View style={styles.content}>
+        <TopNavWithBack />
 
-        {options.map((opt, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.optionButton}
-            onPress={() =>
-              navigation.navigate('LocationSelectScreen', { type: opt.label })
-            }
-          >
-            <Text style={styles.optionText}>{opt.label}</Text>
-            {opt.icon && <Image source={opt.icon} style={styles.optionIcon} />}
-          </TouchableOpacity>
-        ))}
+        <View style={styles.middle}>
+          <Text style={styles.title}>What is your Emergency?</Text>
+
+          {options.map((opt, index) => (
+            <TouchableOpacity
+              key={index}
+              style={styles.optionButton}
+              onPress={() =>
+                navigation.navigate('LocationSelectScreen', { type: opt.label })
+              }
+            >
+              <Text style={styles.optionText}>{opt.label}</Text>
+              {opt.icon && <Image source={opt.icon} style={styles.optionIcon} />}
+            </TouchableOpacity>
+          ))}
+        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#e5e5e5' },
+  container: { flex: 1, backgroundColor: '#fff' },
+  content: {
+    flex: 1,
+  },
   middle: {
     flex: 1,
     paddingTop: 20,

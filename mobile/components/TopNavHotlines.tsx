@@ -6,17 +6,16 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 
 type NavProp = StackNavigationProp<RootStackParamList, 'Menu'>;
 
-export default function TopNav() {
+export default function TopNavHotlines() {
   const navigation = useNavigation<NavProp>();
 
   return (
     <View style={styles.topNav}>
       <View style={styles.logoContainer}>
         <Image
-          source={require('../assets/alistologocolored.png')}
+          source={require('../assets/hotlineslogo.png')}
           style={styles.logo}
         />
-        <Text style={styles.cityText}>Quezon City</Text>
       </View>
 
       <TouchableOpacity onPress={() => navigation.navigate('Menu')}>
@@ -41,11 +40,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: { width: 140, height: 40, resizeMode: 'contain' },
-  cityText: {
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-    color: '#000',
-  },
   hamburger: { fontSize: 22, fontWeight: 'bold' },
 });
