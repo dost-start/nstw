@@ -16,7 +16,6 @@ export default function EmergencyOptionsScreen() {
     { label: 'Ambulance', icon: require('../assets/hospitalemergencyicon.png') },
     { label: 'Police', icon: require('../assets/policeemergencyicon.png') },
     { label: 'Disaster Response', icon: require('../assets/disasterresponseemergencyicon.png') },
-    { label: 'Other', icon: null },
   ];
 
   return (

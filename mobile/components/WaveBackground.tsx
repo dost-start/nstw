@@ -1,102 +1,87 @@
-import React from 'react';
-import { View, Dimensions, StyleSheet } from 'react-native';
+import React from "react";
+import { Dimensions, StyleSheet, View } from "react-native";
+import Svg, { Path } from "react-native-svg";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
-export default function RedBackground() {
-  const mainRedHeight = height * 0.6;
-  const middleRedHeight = height * 0.63;
-  const topRedHeight = height * 0.66;
-  const circleDiameter = width;
+const COLORS = {
+  redMain: "#E63C3C",
+  redShade: "#F9BEBE",
+  redHighlight: "#F3D8D8",
+};
+
+const RedBackground: React.FC = () => {
+  const rectHeight = height * 0.70;
+  const circleHeight = height * 0.22;
+  const rem = 16;
+  const offset = 2 * rem * 0.4;
+
+  const createArcPath = (y: number, arcHeight: number) => {
+    const cp1x = width * 0.25;
+    const cp2x = width * 0.75;
+    const cpY = y - arcHeight;
+
+    return `
+      M 0 ${y}
+      C ${cp1x} ${cpY}, ${cp2x} ${cpY}, ${width} ${y}
+      L ${width} ${y + rectHeight}
+      L 0 ${y + rectHeight}
+      Z
+    `;
+  };
+
+  const arcControl = circleHeight * 0.8;
 
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="none">
-      <View
-        style={[
-          styles.redSection,
-          {
-            height: mainRedHeight,
-            backgroundColor: '#E63C3C',
-            zIndex: 3,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.halfCircle,
-          {
-            width: circleDiameter,
-            height: circleDiameter,
-            borderRadius: circleDiameter / 2,
-            bottom: mainRedHeight - circleDiameter / 2,
-            backgroundColor: '#E63C3C',
-            zIndex: 3,
-          },
-        ]}
-      />
+    <View style={styles.container}>
+      {/* BACK (lightest) */}
+      <Svg
+        width={width}
+        height={rectHeight + circleHeight + offset * 2}
+        style={[styles.svg, { bottom: offset * 2 }]}
+      >
+        <Path
+          d={createArcPath(circleHeight, arcControl)}
+          fill={COLORS.redHighlight}
+        />
+      </Svg>
 
-      {/* Middle red shade */}
-      <View
-        style={[
-          styles.redSection,
-          {
-            height: middleRedHeight,
-            backgroundColor: '#EB5A5A',
-            zIndex: 2,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.halfCircle,
-          {
-            width: circleDiameter,
-            height: circleDiameter,
-            borderRadius: circleDiameter / 2,
-            bottom: middleRedHeight - circleDiameter / 2,
-            backgroundColor: '#EB5A5A',
-            zIndex: 2,
-          },
-        ]}
-      />
+      {/* MIDDLE */}
+      <Svg
+        width={width}
+        height={rectHeight + circleHeight + offset}
+        style={[styles.svg, { bottom: offset }]}
+      >
+        <Path
+          d={createArcPath(circleHeight, arcControl)}
+          fill={COLORS.redShade}
+        />
+      </Svg>
 
-      {/* Top red shade */}
-      <View
-        style={[
-          styles.redSection,
-          {
-            height: topRedHeight,
-            backgroundColor: '#F28C8C',
-            zIndex: 1,
-          },
-        ]}
-      />
-      <View
-        style={[
-          styles.halfCircle,
-          {
-            width: circleDiameter,
-            height: circleDiameter,
-            borderRadius: circleDiameter / 2,
-            bottom: topRedHeight - circleDiameter / 2,
-            backgroundColor: '#F28C8C',
-            zIndex: 1,
-          },
-        ]}
-      />
+      {/* FRONT */}
+      <Svg width={width} height={rectHeight + circleHeight} style={styles.svg}>
+        <Path
+          d={createArcPath(circleHeight, arcControl)}
+          fill={COLORS.redMain}
+        />
+      </Svg>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  redSection: {
-    position: 'absolute',
+  container: {
+    position: "absolute",
     bottom: 0,
     left: 0,
-    right: 0,
+    width: "100%",
+    height: "100%",
   },
-  halfCircle: {
-    position: 'absolute',
+  svg: {
+    position: "absolute",
+    bottom: 0,
     left: 0,
   },
 });
+
+export default RedBackground;
