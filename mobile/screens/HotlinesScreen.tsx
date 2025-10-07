@@ -14,11 +14,9 @@ import BottomNav from '../components/BottomNav';
 export default function HotlinesScreen({ navigation }: any) {
   const options = [
     { label: 'Fire', icon: require('../assets/fireemergencyicon.png') },
-    { label: 'Ambulance', icon: require('../assets/hospitalemergencyicon.png') },
+    { label: 'Medical Emergency', icon: require('../assets/hospitalemergencyicon.png') },
     { label: 'Police', icon: require('../assets/policeemergencyicon.png') },
     { label: 'Disaster Response', icon: require('../assets/disasterresponseemergencyicon.png') },
-    { label: 'Other', icon: null },
-    { label: 'Rescue', icon: require('../assets/policeemergencyicon.png') },
   ];
 
   const contacts = Array.from({ length: 20 }).map((_, i) => ({
