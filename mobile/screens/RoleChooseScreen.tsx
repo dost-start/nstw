@@ -10,21 +10,28 @@ type Props = {
 export default function RoleChooseScreen({ navigation }: Props) {
   return (
     <View style={styles.container}>
-      <Image source={require('../assets/alistologo.png')} style={styles.logo} />
+      <Image
+        source={require('../assets/alistologoquezoncity.png')}
+        style={styles.logo}
+      />
 
-      <TouchableOpacity
-        style={[styles.button, styles.userButton]}
-        onPress={() => navigation.navigate('UserHome')}
-      >
-        <Text style={styles.userText}>User</Text>
-      </TouchableOpacity>
+      <Text style={styles.subtitle}>Emergency Response App</Text>
 
-      <TouchableOpacity
-        style={[styles.button, styles.adminButton]}
-        onPress={() => navigation.navigate('AdminHome')}
-      >
-        <Text style={styles.adminText}>Admin</Text>
-      </TouchableOpacity>
+      <View style={styles.optionsContainer}>
+        <TouchableOpacity
+          style={[styles.button, styles.userButton]}
+          onPress={() => navigation.navigate('UserHome')}
+        >
+          <Text style={styles.userText}>Citizen User</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.button, styles.adminButton]}
+          onPress={() => navigation.navigate('AdminHome')}
+        >
+          <Text style={styles.adminText}>Emergency Responder</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -32,7 +39,19 @@ export default function RoleChooseScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  logo: { width: 300, height: 300, marginBottom: 40, resizeMode: 'contain' },
+  logo: { width: 300, height: 300, resizeMode: 'contain' },
+
+  subtitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 80,
+  },
+
+  optionsContainer: {
+    marginTop: 40,
+    alignItems: 'center',
+  },
 
   button: {
     width: 320,
